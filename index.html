@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Git Flow · Esquema visual de la estrategia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ DESIGN SYSTEM ============ */
+  :root {
+    /* Palette: Inspired by terminals and modern git tools */
+    --bg-deep: #0A0E14;
+    --bg-base: #11161D;
+    --bg-card: #161D26;
+    --bg-elevated: #1D2632;
+    --border: #232D3A;
+    --border-light: #2A3645;
+
+    --text-primary: #E6EDF3;
+    --text-secondary: #9DA7B3;
+    --text-muted: #5A6573;
+
+    --develop: #5B8DEF;
+    --develop-soft: rgba(91, 141, 239, 0.15);
+    --staging: #FFB627;
+    --staging-soft: rgba(255, 182, 39, 0.12);
+    --production: #00D9A3;
+    --production-soft: rgba(0, 217, 163, 0.12);
+    --feature: #B392F0;
+    --feature-soft: rgba(179, 146, 240, 0.12);
+    --release: #F69D50;
+    --release-soft: rgba(246, 157, 80, 0.12);
+    --hotfix: #FF6B6B;
+    --hotfix-soft: rgba(255, 107, 107, 0.15);
+    --revert: #FF6B6B;
+
+    --accent: #00D9A3;
+    --warning: #FFB627;
+    --danger: #FF6B6B;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Inter", -apple-system, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(35, 45, 58, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(35, 45, 58, 0.4) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+    mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 32px 120px;
+  }
+
+  /* ============ HEADER ============ */
+  .header {
+    margin-bottom: 80px;
+    text-align: left;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 100px;
+    background: rgba(0, 217, 163, 0.05);
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  h1 {
+    font-family: "Fraunces", serif;
+    font-weight: 800;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+  .subtitle {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 720px;
+    line-height: 1.6;
+  }
+
+  /* ============ NAVIGATION ============ */
+  .nav-bar {
+    position: sticky;
+    top: 16px;
+    z-index: 100;
+    margin-bottom: 60px;
+    padding: 8px;
+    background: rgba(17, 22, 29, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .nav-btn {
+    flex: 1;
+    min-width: 130px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .nav-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+  }
+  .nav-btn.active {
+    background: var(--accent);
+    color: var(--bg-deep);
+    font-weight: 600;
+  }
+  .nav-btn .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  /* ============ SCENE ============ */
+  .scene {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+  .scene.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .scene-header {
+    margin-bottom: 40px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .scene-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .scene-title {
+    font-family: "Fraunces", serif;
+    font-weight: 700;
+    font-size: clamp(32px, 4.5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  .scene-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 800px;
+  }
+
+  /* ============ DIAGRAM CONTAINER ============ */
+  .diagram-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .diagram-card.dark-bg {
+    background: var(--bg-base);
+  }
+  .diagram-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    min-width: 800px;
+  }
+
+  /* ============ LEGEND ============ */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding: 16px 24px;
+    background: var(--bg-elevated);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+  }
+  .legend-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--bg-elevated);
+  }
+
+  /* ============ STEPS PANEL ============ */
+  .steps-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .step-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .step-card:hover {
+    border-color: var(--border-light);
+    transform: translateY(-2px);
+  }
+  .step-num {
+    font-family: "Fraunces", serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .step-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+  .step-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .step-code {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--bg-deep);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--accent);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* ============ CALLOUTS ============ */
+  .callout {
+    padding: 20px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    border-left: 3px solid;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .callout.warning {
+    background: rgba(255, 182, 39, 0.06);
+    border-color: var(--warning);
+  }
+  .callout.danger {
+    background: rgba(255, 107, 107, 0.06);
+    border-color: var(--danger);
+  }
+  .callout.info {
+    background: rgba(91, 141, 239, 0.06);
+    border-color: var(--develop);
+  }
+  .callout.success {
+    background: rgba(0, 217, 163, 0.06);
+    border-color: var(--accent);
+  }
+  .callout-icon {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .callout.warning .callout-icon { color: var(--warning); }
+  .callout.danger .callout-icon { color: var(--danger); }
+  .callout.info .callout-icon { color: var(--develop); }
+  .callout.success .callout-icon { color: var(--accent); }
+  .callout-content {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .callout-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  /* ============ CODE BLOCKS ============ */
+  .code-block {
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    color: var(--text-primary);
+  }
+  .code-block .comment { color: var(--text-muted); }
+  .code-block .cmd { color: var(--accent); }
+  .code-block .arg { color: var(--text-primary); }
+  .code-block .str { color: var(--staging); }
+  .code-block .prompt { color: var(--text-muted); user-select: none; }
+
+  /* ============ TIMELINE INDICATOR ============ */
+  .timeline-events {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .event-pill {
+    padding: 6px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .event-pill.feature { color: var(--feature); border-color: rgba(179, 146, 240, 0.3); }
+  .event-pill.dev { color: var(--develop); border-color: rgba(91, 141, 239, 0.3); }
+  .event-pill.stg { color: var(--staging); border-color: rgba(255, 182, 39, 0.3); }
+  .event-pill.prod { color: var(--production); border-color: rgba(0, 217, 163, 0.3); }
+  .event-pill.hotfix { color: var(--hotfix); border-color: rgba(255, 107, 107, 0.3); }
+  .event-pill.revert { color: var(--danger); border-color: rgba(255, 107, 107, 0.3); }
+
+  /* ============ TWO COLUMN LAYOUT ============ */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* SVG specifics */
+  .branch-line { stroke-width: 2.5; fill: none; stroke-linecap: round; }
+  .merge-line { stroke-width: 2; fill: none; stroke-linecap: round; }
+  .commit-dot { stroke-width: 2; }
+  .commit-dot.merge { stroke-width: 3; }
+  .commit-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    fill: var(--text-secondary);
+  }
+  .branch-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .merge-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    fill: var(--text-muted);
+  }
+  .version-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  /* ============ FOOTER ============ */
+  .footer {
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: "JetBrains Mono", monospace;
+  }
+
+  /* Dark scrollbar */
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-base); }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- ============ HEADER ============ -->
+  <header class="header">
+    <div class="eyebrow"><span class="dot"></span>Esquema visual · Estrategia Git</div>
+    <h1>Cómo se mueven las <em>ramas</em> en cada caso</h1>
+    <p class="subtitle">
+      Visualización paso a paso de cada escenario de la estrategia: features paralelos, ciclo de QA, salida a producción, hotfixes y cancelaciones. Cada diagrama es interactivo y muestra commits, merges y tags reales.
+    </p>
+  </header>
+
+  <!-- ============ NAVIGATION ============ -->
+  <nav class="nav-bar" id="navBar">
+    <button class="nav-btn active" data-scene="1"><span class="num">01</span>Feature simple</button>
+    <button class="nav-btn" data-scene="2"><span class="num">02</span>Dos features</button>
+    <button class="nav-btn" data-scene="3"><span class="num">03</span>Ciclo QA</button>
+    <button class="nav-btn" data-scene="4"><span class="num">04</span>Producción</button>
+    <button class="nav-btn" data-scene="5"><span class="num">05</span>Hotfix</button>
+    <button class="nav-btn" data-scene="6"><span class="num">06</span>Cancelación</button>
+    <button class="nav-btn" data-scene="7"><span class="num">07</span>Completo</button>
+  </nav>
+
+  <!-- ============ LEGEND ============ -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background: var(--feature)"></span>feature/</div>
+    <div class="legend-item"><span class="legend-dot" style="background: var(--develop)"></span>develop</div>
+    <div class="legend-item"><span class="legend-dot" style="background: var(--release)"></span>release-stg/ · release/</div>
+    <div class="legend-item"><span class="legend-dot" style="background: var(--staging)"></span>staging</div>
+    <div class="legend-item"><span class="legend-dot" style="background: var(--production)"></span>production</div>
+    <div class="legend-item"><span class="legend-dot" style="background: var(--hotfix)"></span>hotfix/</div>
+  </div>
+
+  <!-- ============================================================
+       SCENE 1 — FEATURE SIMPLE
+       ============================================================ -->
+  <section class="scene active" data-scene="1">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 01 · LO MÁS BÁSICO</div>
+      <h2 class="scene-title">Un feature, de principio a fin</h2>
+      <p class="scene-desc">
+        El recorrido completo del feature <code style="font-family: 'JetBrains Mono', monospace; color: var(--feature); background: var(--feature-soft); padding: 2px 6px; border-radius: 4px;">AhorroMarket</code>: nace de develop, se desarrolla en su rama propia, y vuelve a integrarse con un merge commit identificable.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- Develop line -->
+        <line class="branch-line" x1="110" y1="80" x2="1100" y2="80" stroke="var(--develop)" />
+        <!-- Feature line (curves up and back) -->
+        <path class="branch-line" d="M 250 80 Q 290 80 320 160 L 880 160 Q 920 160 950 80"
+              stroke="var(--feature)" />
+
+        <!-- Develop commits -->
+        <circle class="commit-dot" cx="100" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="180" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="250" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="950" cy="80" r="9" fill="var(--develop)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="1050" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Feature commits -->
+        <circle class="commit-dot" cx="400" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+        <circle class="commit-dot" cx="520" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+        <circle class="commit-dot" cx="640" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+        <circle class="commit-dot" cx="760" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="84" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="280" y="200" fill="var(--feature)">feature/AhorroMarket</text>
+
+        <!-- Commit labels -->
+        <text class="commit-label" x="400" y="190" text-anchor="middle">modelo</text>
+        <text class="commit-label" x="520" y="190" text-anchor="middle">api</text>
+        <text class="commit-label" x="640" y="190" text-anchor="middle">ui</text>
+        <text class="commit-label" x="760" y="190" text-anchor="middle">ajustes</text>
+
+        <!-- Merge commit annotation -->
+        <line x1="950" y1="55" x2="950" y2="40" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2 2"/>
+        <rect x="850" y="15" width="200" height="22" rx="11" fill="var(--accent)" />
+        <text class="version-tag" x="950" y="30" text-anchor="middle" fill="var(--bg-deep)">DEV AhorroMarket</text>
+
+        <!-- Step markers -->
+        <text class="merge-tag" x="250" y="60" text-anchor="middle">① branch</text>
+        <text class="merge-tag" x="950" y="120" text-anchor="middle">② merge --no-ff</text>
+      </svg>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">→</div>
+      <div class="callout-content">
+        <span class="callout-title">El merge commit es lo importante</span>
+        El círculo grande en develop representa <strong>un único punto de entrada</strong>. Los 4 commits del feature están agrupados bajo él. Si hay que revertir, es un solo comando: <code style="color: var(--accent); font-family: 'JetBrains Mono', monospace;">git revert -m 1 &lt;hash&gt;</code>.
+      </div>
+    </div>
+
+    <div class="steps-panel">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <div class="step-title">Crear rama desde develop</div>
+        <div class="step-desc">El feature siempre nace de develop, nunca de otra rama de feature.</div>
+        <div class="step-code">git checkout -b feature/AhorroMarket</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <div class="step-title">Trabajar libremente</div>
+        <div class="step-desc">La rama no está protegida. El owner mergea sub-ramas a su discreción.</div>
+        <div class="step-code">commit, commit, commit...</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <div class="step-title">PR a develop con --no-ff</div>
+        <div class="step-desc">Genera el merge commit identificable que será el ancla del feature.</div>
+        <div class="step-code">git merge --no-ff feature/AhorroMarket</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 2 — DOS FEATURES EN PARALELO
+       ============================================================ -->
+  <section class="scene" data-scene="2">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 02 · DOS EQUIPOS A LA VEZ</div>
+      <h2 class="scene-title">Dos features, dos equipos, una develop</h2>
+      <p class="scene-desc">
+        El equipo A construye <code style="font-family: 'JetBrains Mono', monospace; color: var(--feature); background: var(--feature-soft); padding: 2px 6px; border-radius: 4px;">AhorroMarket</code> mientras el equipo B construye <code style="font-family: 'JetBrains Mono', monospace; color: var(--feature); background: var(--feature-soft); padding: 2px 6px; border-radius: 4px;">PagosMercado</code>. Ambas ramas viven en paralelo, sincronizando con develop frecuentemente para evitar conflictos al final.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- Develop -->
+        <line class="branch-line" x1="110" y1="190" x2="1100" y2="190" stroke="var(--develop)" />
+
+        <!-- Feature A: AhorroMarket (top) -->
+        <path class="branch-line" d="M 230 190 Q 270 190 300 100 L 800 100 Q 840 100 870 190"
+              stroke="var(--feature)" />
+        <!-- Feature B: PagosMercado (bottom) -->
+        <path class="branch-line" d="M 280 190 Q 320 190 350 280 L 950 280 Q 990 280 1020 190"
+              stroke="#F69D50" />
+
+        <!-- Develop commits -->
+        <circle class="commit-dot" cx="100" cy="190" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="170" cy="190" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="230" cy="190" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="280" cy="190" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot merge" cx="870" cy="190" r="9" fill="var(--feature)" stroke="var(--feature)" />
+        <circle class="commit-dot merge" cx="1020" cy="190" r="9" fill="#F69D50" stroke="#F69D50" />
+        <circle class="commit-dot" cx="1090" cy="190" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Feature A commits (top) -->
+        <circle class="commit-dot" cx="380" cy="100" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+        <circle class="commit-dot" cx="500" cy="100" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+        <!-- Sync from develop into feature A -->
+        <path class="merge-line" d="M 280 190 Q 540 145 580 100" stroke="var(--text-muted)" stroke-dasharray="3 3" opacity="0.5"/>
+        <circle class="commit-dot" cx="580" cy="100" r="5" fill="var(--bg-deep)" stroke="var(--text-muted)" />
+        <circle class="commit-dot" cx="700" cy="100" r="6" fill="var(--bg-deep)" stroke="var(--feature)" />
+
+        <!-- Feature B commits (bottom) -->
+        <circle class="commit-dot" cx="430" cy="280" r="6" fill="var(--bg-deep)" stroke="#F69D50" />
+        <circle class="commit-dot" cx="560" cy="280" r="6" fill="var(--bg-deep)" stroke="#F69D50" />
+        <!-- Sync from develop into feature B -->
+        <path class="merge-line" d="M 870 190 Q 700 230 700 280" stroke="var(--text-muted)" stroke-dasharray="3 3" opacity="0.5"/>
+        <circle class="commit-dot" cx="700" cy="280" r="5" fill="var(--bg-deep)" stroke="var(--text-muted)" />
+        <circle class="commit-dot" cx="830" cy="280" r="6" fill="var(--bg-deep)" stroke="#F69D50" />
+        <circle class="commit-dot" cx="930" cy="280" r="6" fill="var(--bg-deep)" stroke="#F69D50" />
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="194" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="280" y="60" fill="var(--feature)">feature/AhorroMarket  (Equipo A)</text>
+        <text class="branch-label" x="280" y="350" fill="#F69D50">feature/PagosMercado  (Equipo B)</text>
+
+        <!-- Sync labels -->
+        <text class="merge-tag" x="540" y="155" text-anchor="middle" fill="var(--text-muted)">sync develop</text>
+        <text class="merge-tag" x="730" y="240" text-anchor="middle" fill="var(--text-muted)">sync develop</text>
+
+        <!-- Merge tags -->
+        <line x1="870" y1="165" x2="870" y2="150" stroke="var(--feature)" stroke-width="1" stroke-dasharray="2 2"/>
+        <rect x="780" y="125" width="180" height="22" rx="11" fill="var(--feature)" />
+        <text class="version-tag" x="870" y="140" text-anchor="middle" fill="var(--bg-deep)">DEV AhorroMarket</text>
+
+        <line x1="1020" y1="165" x2="1020" y2="150" stroke="#F69D50" stroke-width="1" stroke-dasharray="2 2"/>
+        <rect x="930" y="125" width="180" height="22" rx="11" fill="#F69D50" />
+        <text class="version-tag" x="1020" y="140" text-anchor="middle" fill="var(--bg-deep)">DEV PagosMercado</text>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">!</div>
+      <div class="callout-content">
+        <span class="callout-title">Sync diario, no semanal</span>
+        Las líneas punteadas muestran cuando cada feature trae lo último de develop. Hacerlo seguido evita el "merge hell" al final. Si la rama vive 3 semanas sin sync, los conflictos finales son inmanejables.
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="step-card">
+        <span class="step-num">A</span>
+        <div class="step-title">Ramas independientes</div>
+        <div class="step-desc">Cada equipo trabaja en su rama sin pisar al otro. Si tocan archivos compartidos, lo coordinan por canal del equipo.</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">B</span>
+        <div class="step-title">Sincronización constante</div>
+        <div class="step-desc">Cada 1-2 días: <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">git merge develop</code> dentro de la rama del feature para resolver conflictos pequeños temprano.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 3 — CICLO DE QA
+       ============================================================ -->
+  <section class="scene" data-scene="3">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 03 · RELEASE BRANCH PARA QA</div>
+      <h2 class="scene-title">Cuando los features están listos para QA</h2>
+      <p class="scene-desc">
+        Se crea una rama <code style="font-family: 'JetBrains Mono', monospace; color: var(--release); background: var(--release-soft); padding: 2px 6px; border-radius: 4px;">release-stg/9.22.0</code> desde develop. Ahí se generan los builds para QA, se aplican los fixes que ellos detecten, y cuando aprueban se promueve a staging.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 360" xmlns="http://www.w3.org/2000/svg">
+        <!-- Lines -->
+        <line class="branch-line" x1="110" y1="80" x2="1100" y2="80" stroke="var(--develop)" />
+        <line class="branch-line" x1="110" y1="240" x2="1100" y2="240" stroke="var(--staging)" stroke-dasharray="4 4" opacity="0.3" />
+        <path class="branch-line" d="M 280 80 Q 320 80 350 160 L 920 160 Q 960 160 990 240"
+              stroke="var(--release)" />
+
+        <!-- Fix branch from release-stg -->
+        <path class="branch-line" d="M 540 160 Q 580 160 600 100 L 700 100 Q 740 100 760 160"
+              stroke="var(--hotfix)" stroke-width="2" opacity="0.7"/>
+
+        <!-- Develop commits -->
+        <circle class="commit-dot" cx="180" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot merge" cx="280" cy="80" r="9" fill="var(--feature)" stroke="var(--feature)" />
+        <circle class="commit-dot" cx="1080" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- release-stg commits -->
+        <circle class="commit-dot" cx="430" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+        <circle class="commit-dot" cx="540" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+        <circle class="commit-dot merge" cx="760" cy="160" r="8" fill="var(--hotfix)" stroke="var(--hotfix)" />
+        <circle class="commit-dot" cx="870" cy="160" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+
+        <!-- Fix commits -->
+        <circle class="commit-dot" cx="660" cy="100" r="5" fill="var(--bg-deep)" stroke="var(--hotfix)" />
+
+        <!-- Staging arrival -->
+        <circle class="commit-dot merge" cx="990" cy="240" r="9" fill="var(--staging)" stroke="var(--staging)" />
+
+        <!-- Build tags on release-stg -->
+        <rect x="395" y="190" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--release)" />
+        <text class="version-tag" x="435" y="204" text-anchor="middle" fill="var(--release)">v9.22.0(1)</text>
+
+        <rect x="500" y="190" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--release)" />
+        <text class="version-tag" x="540" y="204" text-anchor="middle" fill="var(--release)">v9.22.0(2)</text>
+
+        <rect x="720" y="190" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--release)" />
+        <text class="version-tag" x="760" y="204" text-anchor="middle" fill="var(--release)">v9.22.0(3)</text>
+
+        <rect x="830" y="190" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--accent)" stroke-width="2" />
+        <text class="version-tag" x="870" y="204" text-anchor="middle" fill="var(--accent)">v9.22.0(4) ✓</text>
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="84" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="10" y="244" text-anchor="start" fill="var(--staging)">staging</text>
+        <text class="branch-label" x="350" y="140" fill="var(--release)">release-stg/9.22.0</text>
+        <text class="branch-label" x="600" y="80" fill="var(--hotfix)" font-size="11">fix-stg/9.22.0-T123</text>
+
+        <!-- Annotations -->
+        <text class="commit-label" x="280" y="60" text-anchor="middle">DEV feature</text>
+        <text class="commit-label" x="660" y="84" text-anchor="middle">fix QA</text>
+        <text class="commit-label" x="760" y="140" text-anchor="middle">merge fix</text>
+
+        <!-- Merge to staging tag -->
+        <line x1="990" y1="215" x2="990" y2="200" stroke="var(--staging)" stroke-width="1" stroke-dasharray="2 2"/>
+        <rect x="900" y="280" width="180" height="22" rx="11" fill="var(--staging)" />
+        <text class="version-tag" x="990" y="295" text-anchor="middle" fill="var(--bg-deep)">STG AhorroMarket</text>
+        <line x1="990" y1="280" x2="990" y2="252" stroke="var(--staging)" stroke-width="1" stroke-dasharray="2 2"/>
+
+        <!-- After staging: merge back to develop -->
+        <path class="merge-line" d="M 990 240 Q 1040 240 1080 80" stroke="var(--text-muted)" stroke-dasharray="3 3" opacity="0.6"/>
+        <text class="merge-tag" x="1100" y="160" text-anchor="middle" fill="var(--text-muted)">sync</text>
+      </svg>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">i</div>
+      <div class="callout-content">
+        <span class="callout-title">Numeración de builds</span>
+        Cada build subido a tienda incrementa el número entre paréntesis: <code style="font-family: 'JetBrains Mono', monospace; color: var(--release);">v9.22.0(1)</code>, <code style="font-family: 'JetBrains Mono', monospace; color: var(--release);">v9.22.0(2)</code>... El que QA aprueba es el que se promueve. Esto cumple el requisito de iOS y Android de tener un build number único por upload.
+      </div>
+    </div>
+
+    <div class="timeline-events">
+      <span class="event-pill dev">① rama desde develop</span>
+      <span class="event-pill">② build (1) → QA</span>
+      <span class="event-pill hotfix">③ fix encontrado</span>
+      <span class="event-pill">④ build (2), (3)... iterando</span>
+      <span class="event-pill stg">⑤ aprobado → staging</span>
+      <span class="event-pill dev">⑥ staging → develop (sync)</span>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 4 — PRODUCCIÓN
+       ============================================================ -->
+  <section class="scene" data-scene="4">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 04 · CICLO DE PRODUCCIÓN</div>
+      <h2 class="scene-title">Camino a las tiendas y merge en reversa</h2>
+      <p class="scene-desc">
+        Una vez staging tiene la versión, se crea <code style="font-family: 'JetBrains Mono', monospace; color: var(--release); background: var(--release-soft); padding: 2px 6px; border-radius: 4px;">release/9.22.0</code> para el ciclo productivo. Si aparecen bugs solo visibles en producción, se arreglan ahí. Cuando sale a tiendas, hacemos <strong>merge en reversa</strong>.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Three main lines -->
+        <line class="branch-line" x1="110" y1="80" x2="1100" y2="80" stroke="var(--develop)" />
+        <line class="branch-line" x1="110" y1="200" x2="1100" y2="200" stroke="var(--staging)" />
+        <line class="branch-line" x1="110" y1="380" x2="1100" y2="380" stroke="var(--production)" />
+
+        <!-- Release production branch -->
+        <path class="branch-line" d="M 280 200 Q 320 200 350 290 L 800 290 Q 840 290 870 380"
+              stroke="var(--release)" />
+
+        <!-- Develop commits -->
+        <circle class="commit-dot" cx="180" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="1000" cy="80" r="9" fill="var(--develop)" stroke="var(--develop)" />
+
+        <!-- Staging commits -->
+        <circle class="commit-dot merge" cx="280" cy="200" r="9" fill="var(--staging)" stroke="var(--staging)" />
+        <circle class="commit-dot" cx="950" cy="200" r="9" fill="var(--staging)" stroke="var(--staging)" />
+
+        <!-- Release/ commits -->
+        <circle class="commit-dot" cx="450" cy="290" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+        <circle class="commit-dot" cx="600" cy="290" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+        <circle class="commit-dot" cx="750" cy="290" r="6" fill="var(--bg-deep)" stroke="var(--release)" />
+
+        <!-- Production merge -->
+        <circle class="commit-dot merge" cx="870" cy="380" r="10" fill="var(--production)" stroke="var(--production)" />
+
+        <!-- Build tags -->
+        <rect x="415" y="320" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--release)" />
+        <text class="version-tag" x="455" y="334" text-anchor="middle" fill="var(--release)">v9.22.0(5)</text>
+
+        <rect x="565" y="320" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--release)" />
+        <text class="version-tag" x="605" y="334" text-anchor="middle" fill="var(--release)">v9.22.0(6)</text>
+
+        <rect x="715" y="320" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--accent)" stroke-width="2" />
+        <text class="version-tag" x="755" y="334" text-anchor="middle" fill="var(--accent)">v9.22.0(7)✓</text>
+
+        <!-- Production tag -->
+        <rect x="800" y="395" width="140" height="22" rx="11" fill="var(--production)" />
+        <text class="version-tag" x="870" y="410" text-anchor="middle" fill="var(--bg-deep)" font-size="11">tag: v9.22.0</text>
+
+        <!-- MERGE EN REVERSA -->
+        <path class="merge-line" d="M 870 380 Q 940 380 950 200" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+        <path class="merge-line" d="M 950 200 Q 1000 200 1000 80" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+
+        <!-- Arrows for reverse merge -->
+        <polygon points="945,210 955,200 945,190" fill="var(--accent)"/>
+        <polygon points="995,90 1005,80 995,70" fill="var(--accent)"/>
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="84" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="10" y="204" text-anchor="start" fill="var(--staging)">staging</text>
+        <text class="branch-label" x="10" y="384" text-anchor="start" fill="var(--production)">production</text>
+        <text class="branch-label" x="350" y="270" fill="var(--release)">release/9.22.0</text>
+
+        <!-- Step markers -->
+        <text class="commit-label" x="280" y="180" text-anchor="middle">STG approved</text>
+        <text class="commit-label" x="600" y="265" text-anchor="middle">fix solo prod</text>
+        <text class="merge-tag" x="970" y="280" text-anchor="middle" fill="var(--accent)" font-weight="600">MERGE EN REVERSA</text>
+        <text class="merge-tag" x="1050" y="140" text-anchor="middle" fill="var(--accent)">↑</text>
+      </svg>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">↺</div>
+      <div class="callout-content">
+        <span class="callout-title">El merge en reversa es OBLIGATORIO</span>
+        Después de la salida a producción: <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">production → staging → develop</code>. Si lo olvidamos, los fixes que solo aparecieron en producción se reintroducen como bugs en la próxima versión.
+      </div>
+    </div>
+
+    <div class="code-block">
+<span class="comment"># Después de que la versión sale a tiendas</span>
+<span class="prompt">$ </span><span class="cmd">git checkout</span> <span class="arg">production</span>
+<span class="prompt">$ </span><span class="cmd">git merge --no-ff</span> <span class="arg">release/9.22.0 -m</span> <span class="str">"PROD v9.22.0"</span>
+<span class="prompt">$ </span><span class="cmd">git tag</span> <span class="arg">v9.22.0</span>
+
+<span class="comment"># Merge en reversa — propagamos hacia atrás</span>
+<span class="prompt">$ </span><span class="cmd">git checkout</span> <span class="arg">staging</span> <span class="cmd">&&</span> <span class="cmd">git merge</span> <span class="arg">production</span>
+<span class="prompt">$ </span><span class="cmd">git checkout</span> <span class="arg">develop</span> <span class="cmd">&&</span> <span class="cmd">git merge</span> <span class="arg">staging</span></div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 5 — HOTFIX
+       ============================================================ -->
+  <section class="scene" data-scene="5">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 05 · EMERGENCIA EN TIENDAS</div>
+      <h2 class="scene-title">Bug crítico en producción → Hotfix</h2>
+      <p class="scene-desc">
+        Un crash crítico aparece en la versión <code style="font-family: 'JetBrains Mono', monospace; color: var(--production);">v9.22.0</code> que ya está en tiendas. No podemos esperar la próxima versión. Sale una rama directo de production, se arregla, se publica como <code style="font-family: 'JetBrains Mono', monospace; color: var(--production);">v9.22.1</code> y se propaga hacia atrás.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Three main lines -->
+        <line class="branch-line" x1="110" y1="80" x2="1100" y2="80" stroke="var(--develop)" />
+        <line class="branch-line" x1="110" y1="200" x2="1100" y2="200" stroke="var(--staging)" />
+        <line class="branch-line" x1="110" y1="320" x2="1100" y2="320" stroke="var(--production)" />
+
+        <!-- Hotfix branch (below production) -->
+        <path class="branch-line" d="M 350 320 Q 390 320 420 380 L 700 380 Q 740 380 770 320"
+              stroke="var(--hotfix)" />
+
+        <!-- Initial state — v9.22.0 in production -->
+        <circle class="commit-dot merge" cx="350" cy="320" r="9" fill="var(--production)" stroke="var(--production)" />
+        <rect x="290" y="290" width="120" height="20" rx="4" fill="var(--production-soft)" stroke="var(--production)" />
+        <text class="version-tag" x="350" y="304" text-anchor="middle" fill="var(--production)">v9.22.0 (live)</text>
+
+        <!-- Hotfix commits -->
+        <circle class="commit-dot" cx="500" cy="380" r="6" fill="var(--bg-deep)" stroke="var(--hotfix)" />
+        <circle class="commit-dot" cx="620" cy="380" r="6" fill="var(--bg-deep)" stroke="var(--hotfix)" />
+
+        <!-- Hotfix merge to production -->
+        <circle class="commit-dot merge" cx="770" cy="320" r="10" fill="var(--hotfix)" stroke="var(--hotfix)" />
+        <rect x="710" y="280" width="120" height="20" rx="4" fill="var(--hotfix-soft)" stroke="var(--hotfix)" />
+        <text class="version-tag" x="770" y="294" text-anchor="middle" fill="var(--hotfix)">v9.22.1 (live)</text>
+
+        <!-- Build tags on hotfix -->
+        <rect x="465" y="395" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--hotfix)" />
+        <text class="version-tag" x="505" y="409" text-anchor="middle" fill="var(--hotfix)">v9.22.1(1)</text>
+        <rect x="585" y="395" width="80" height="20" rx="4" fill="var(--bg-elevated)" stroke="var(--accent)" stroke-width="2" />
+        <text class="version-tag" x="625" y="409" text-anchor="middle" fill="var(--accent)">v9.22.1(2)✓</text>
+
+        <!-- Reverse merge: production → staging → develop -->
+        <path class="merge-line" d="M 770 320 Q 830 320 850 200" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+        <circle class="commit-dot merge" cx="850" cy="200" r="9" fill="var(--staging)" stroke="var(--staging)" />
+
+        <path class="merge-line" d="M 850 200 Q 920 200 940 80" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 4"/>
+        <circle class="commit-dot merge" cx="940" cy="80" r="9" fill="var(--develop)" stroke="var(--develop)" />
+
+        <!-- Arrows -->
+        <polygon points="845,210 855,200 845,190" fill="var(--accent)"/>
+        <polygon points="935,90 945,80 935,70" fill="var(--accent)"/>
+
+        <!-- Other commits for context -->
+        <circle class="commit-dot" cx="180" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="180" cy="200" r="7" fill="var(--bg-deep)" stroke="var(--staging)" />
+        <circle class="commit-dot" cx="1050" cy="80" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="84" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="10" y="204" text-anchor="start" fill="var(--staging)">staging</text>
+        <text class="branch-label" x="10" y="324" text-anchor="start" fill="var(--production)">production</text>
+        <text class="branch-label" x="430" y="370" fill="var(--hotfix)">hotfix/9.22.1-T999-crash</text>
+
+        <!-- Annotations -->
+        <text class="merge-tag" x="500" y="350" text-anchor="middle">crash fix</text>
+        <text class="merge-tag" x="620" y="350" text-anchor="middle">QA validó</text>
+        <text class="merge-tag" x="900" y="155" text-anchor="middle" fill="var(--accent)" font-weight="600">REVERSA</text>
+      </svg>
+    </div>
+
+    <div class="callout danger">
+      <div class="callout-icon">!</div>
+      <div class="callout-content">
+        <span class="callout-title">El hotfix sale de production, no de develop</span>
+        Es la única rama que rompe la regla "todo nace de develop". Esto garantiza que el fix se aplica exactamente sobre el código que está corriendo en tiendas, sin contaminarse de features no liberados que existen en develop.
+      </div>
+    </div>
+
+    <div class="steps-panel">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <div class="step-title">Sale de production</div>
+        <div class="step-code">git checkout production</div>
+        <div class="step-code">git checkout -b hotfix/9.22.1-T999</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <div class="step-title">Builds incrementales</div>
+        <div class="step-desc">v9.22.1(1), v9.22.1(2)... hasta que QA aprueba el build correcto.</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <div class="step-title">Merge a production + tag</div>
+        <div class="step-code">git merge --no-ff hotfix/9.22.1-T999</div>
+        <div class="step-code">git tag v9.22.1</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">4</span>
+        <div class="step-title">Reversa obligatoria</div>
+        <div class="step-code">production → staging → develop</div>
+        <div class="step-desc">Sin esto, el bug volvería en la próxima versión.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 6 — CANCELACIÓN
+       ============================================================ -->
+  <section class="scene" data-scene="6">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 06 · EL CLIENTE CAMBIÓ DE OPINIÓN</div>
+      <h2 class="scene-title">Retirar un feature ya mergeado</h2>
+      <p class="scene-desc">
+        El feature <code style="font-family: 'JetBrains Mono', monospace; color: var(--feature); background: var(--feature-soft); padding: 2px 6px; border-radius: 4px;">AhorroMarket</code> ya está en develop, pero el cliente decide cancelarlo. Gracias al <strong>--no-ff</strong> y la convención de commits, podemos identificar el merge commit exacto y revertirlo en un comando.
+      </p>
+    </div>
+
+    <div class="diagram-card">
+      <svg class="diagram-svg" viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- Develop -->
+        <line class="branch-line" x1="110" y1="160" x2="1100" y2="160" stroke="var(--develop)" />
+
+        <!-- Backup branch from develop (above) -->
+        <path class="branch-line" d="M 580 160 Q 620 160 650 80 L 1080 80"
+              stroke="var(--text-muted)" stroke-dasharray="4 2" />
+
+        <!-- Feature (below) - already merged -->
+        <path class="branch-line" d="M 200 160 Q 240 160 270 240 L 420 240 Q 460 240 490 160"
+              stroke="var(--feature)" opacity="0.5" />
+
+        <!-- Develop commits -->
+        <circle class="commit-dot" cx="100" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="160" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Feature merge commit (the one we'll revert) -->
+        <circle class="commit-dot merge" cx="490" cy="160" r="11" fill="var(--feature)" stroke="var(--feature)" />
+        <rect x="400" y="115" width="180" height="22" rx="11" fill="var(--feature)" />
+        <text class="version-tag" x="490" y="130" text-anchor="middle" fill="var(--bg-deep)">DEV AhorroMarket</text>
+        <line x1="490" y1="138" x2="490" y2="148" stroke="var(--feature)" stroke-width="1"/>
+
+        <!-- More develop commits after the feature -->
+        <circle class="commit-dot" cx="580" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="650" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Feature commits (below, faded) -->
+        <circle class="commit-dot" cx="320" cy="240" r="5" fill="var(--bg-deep)" stroke="var(--feature)" opacity="0.5"/>
+        <circle class="commit-dot" cx="400" cy="240" r="5" fill="var(--bg-deep)" stroke="var(--feature)" opacity="0.5"/>
+
+        <!-- Backup branch commits (above) -->
+        <circle class="commit-dot" cx="730" cy="80" r="6" fill="var(--bg-deep)" stroke="var(--text-muted)" />
+        <circle class="commit-dot" cx="830" cy="80" r="6" fill="var(--bg-deep)" stroke="var(--text-muted)" />
+
+        <!-- THE REVERT -->
+        <circle class="commit-dot merge" cx="900" cy="160" r="11" fill="var(--bg-deep)" stroke="var(--danger)" stroke-width="3" />
+        <text x="900" y="165" text-anchor="middle" fill="var(--danger)" font-family="JetBrains Mono" font-size="14" font-weight="700">↺</text>
+        <rect x="800" y="195" width="200" height="22" rx="11" fill="var(--danger)" />
+        <text class="version-tag" x="900" y="210" text-anchor="middle" fill="var(--bg-deep)">REVERT AhorroMarket</text>
+        <line x1="900" y1="180" x2="900" y2="195" stroke="var(--danger)" stroke-width="1"/>
+
+        <!-- Continue develop -->
+        <circle class="commit-dot" cx="1000" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+        <circle class="commit-dot" cx="1080" cy="160" r="7" fill="var(--bg-deep)" stroke="var(--develop)" />
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="164" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="700" y="60" fill="var(--text-muted)">backup/develop-pre-revert</text>
+        <text class="branch-label" x="270" y="280" fill="var(--feature)" opacity="0.6">feature/AhorroMarket (deprecated)</text>
+
+        <!-- Step indicators -->
+        <text class="merge-tag" x="490" y="105" text-anchor="middle" fill="var(--feature)">target</text>
+        <text class="merge-tag" x="900" y="118" text-anchor="middle" fill="var(--danger)" font-weight="600">git revert -m 1</text>
+
+        <!-- Arrow connecting -->
+        <path d="M 510 155 Q 700 80 880 155" stroke="var(--danger)" stroke-width="1.5" stroke-dasharray="3 3" fill="none" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-content">
+        <span class="callout-title">Si el feature ya llegó a staging o production</span>
+        El revert se aplica también allí, en este orden: <strong>develop → staging → production</strong>. Si está en producción, técnicamente es un hotfix con propósito de revert.
+      </div>
+    </div>
+
+    <div class="steps-panel">
+      <div class="step-card">
+        <span class="step-num">1</span>
+        <div class="step-title">Backup primero</div>
+        <div class="step-desc">Antes de tocar nada, una rama de respaldo por si el cliente cambia otra vez de opinión.</div>
+        <div class="step-code">git checkout -b backup/develop-pre-revert</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">2</span>
+        <div class="step-title">Identificar el merge commit</div>
+        <div class="step-desc">Buscamos por convención el commit "DEV AhorroMarket".</div>
+        <div class="step-code">git log --merges --grep="AhorroMarket"</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num">3</span>
+        <div class="step-title">Revertir el merge</div>
+        <div class="step-desc">Un solo comando deshace todo el feature, manteniendo el historial limpio.</div>
+        <div class="step-code">git revert -m 1 &lt;hash&gt;</div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">i</div>
+      <div class="callout-content">
+        <span class="callout-title">¿Y si el feature vuelve después?</span>
+        No hagas merge directo de la rama original — git creerá que ya está integrado. El comando correcto es <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">git revert &lt;hash-del-revert&gt;</code> (revertir el revert).
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 7 — DIAGRAMA COMPLETO
+       ============================================================ -->
+  <section class="scene" data-scene="7">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 07 · TODO JUNTO</div>
+      <h2 class="scene-title">El flujo completo en una sola vista</h2>
+      <p class="scene-desc">
+        Todas las ramas, todos los ambientes, todos los movimientos juntos. Útil como póster para el equipo.
+      </p>
+    </div>
+
+    <div class="diagram-card dark-bg">
+      <svg class="diagram-svg" viewBox="0 0 1400 540" xmlns="http://www.w3.org/2000/svg">
+        <!-- Five main lines -->
+        <line class="branch-line" x1="110" y1="80" x2="1380" y2="80" stroke="var(--develop)" opacity="0.4"/>
+        <line class="branch-line" x1="110" y1="200" x2="1380" y2="200" stroke="var(--release)" opacity="0.4"/>
+        <line class="branch-line" x1="110" y1="320" x2="1380" y2="320" stroke="var(--staging)" opacity="0.4"/>
+        <line class="branch-line" x1="110" y1="440" x2="1380" y2="440" stroke="var(--production)" opacity="0.4"/>
+
+        <!-- Active segments will be drawn over -->
+
+        <!-- ============ Phase 1: Feature → develop ============ -->
+        <path class="branch-line" d="M 100 80 Q 140 80 170 30 L 200 30 Q 240 30 270 80"
+              stroke="var(--feature)" />
+        <line class="branch-line" x1="110" y1="80" x2="270" y2="80" stroke="var(--develop)" />
+
+        <circle class="commit-dot" cx="100" cy="80" r="6" fill="var(--bg-deep)" stroke="var(--develop)"/>
+        <circle class="commit-dot" cx="170" cy="30" r="5" fill="var(--bg-deep)" stroke="var(--feature)"/>
+        <circle class="commit-dot" cx="200" cy="30" r="5" fill="var(--bg-deep)" stroke="var(--feature)"/>
+        <circle class="commit-dot merge" cx="270" cy="80" r="8" fill="var(--feature)" stroke="var(--feature)"/>
+
+        <text class="branch-label" x="180" y="20" fill="var(--feature)" font-size="10">feature/X</text>
+        <text class="merge-tag" x="270" y="65" text-anchor="middle" fill="var(--feature)">DEV X</text>
+
+        <!-- ============ Phase 2: develop → release-stg → staging ============ -->
+        <path class="branch-line" d="M 270 80 Q 310 80 340 140 L 470 140 Q 510 140 540 80"
+              stroke="var(--develop)" opacity="0.6" stroke-dasharray="3 3"/>
+        <line class="branch-line" x1="270" y1="80" x2="540" y2="80" stroke="var(--develop)" />
+        <path class="branch-line" d="M 320 80 Q 360 80 390 200 L 660 200 Q 700 200 730 320"
+              stroke="var(--release)" />
+
+        <circle class="commit-dot" cx="320" cy="80" r="6" fill="var(--bg-deep)" stroke="var(--develop)"/>
+        <circle class="commit-dot" cx="450" cy="200" r="5" fill="var(--bg-deep)" stroke="var(--release)"/>
+        <circle class="commit-dot" cx="540" cy="200" r="5" fill="var(--bg-deep)" stroke="var(--release)"/>
+        <circle class="commit-dot" cx="640" cy="200" r="5" fill="var(--bg-deep)" stroke="var(--release)"/>
+        <circle class="commit-dot merge" cx="730" cy="320" r="8" fill="var(--staging)" stroke="var(--staging)"/>
+
+        <text class="branch-label" x="380" y="190" fill="var(--release)" font-size="10">release-stg/9.22.0</text>
+        <text class="merge-tag" x="495" y="240" text-anchor="middle" fill="var(--release)" font-size="9">v9.22.0(1..3)</text>
+        <text class="merge-tag" x="730" y="305" text-anchor="middle" fill="var(--staging)">STG X</text>
+
+        <!-- staging → develop sync -->
+        <path class="merge-line" d="M 730 320 Q 770 320 780 80" stroke="var(--text-muted)" stroke-dasharray="3 3" opacity="0.5"/>
+
+        <!-- ============ Phase 3: staging → release/ → production ============ -->
+        <line class="branch-line" x1="730" y1="320" x2="900" y2="320" stroke="var(--staging)" />
+        <path class="branch-line" d="M 800 320 Q 840 320 870 380 L 920 380 Q 960 380 990 440"
+              stroke="var(--release)" />
+
+        <circle class="commit-dot" cx="800" cy="320" r="6" fill="var(--bg-deep)" stroke="var(--staging)"/>
+        <circle class="commit-dot" cx="900" cy="380" r="5" fill="var(--bg-deep)" stroke="var(--release)"/>
+        <circle class="commit-dot merge" cx="990" cy="440" r="9" fill="var(--production)" stroke="var(--production)"/>
+
+        <text class="branch-label" x="870" y="370" fill="var(--release)" font-size="10">release/9.22.0</text>
+        <rect x="940" y="455" width="100" height="18" rx="9" fill="var(--production)"/>
+        <text class="version-tag" x="990" y="468" text-anchor="middle" fill="var(--bg-deep)" font-size="10">v9.22.0</text>
+
+        <!-- ============ Phase 4: REVERSE MERGE ============ -->
+        <path class="merge-line" d="M 990 440 Q 1030 440 1040 320" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 3"/>
+        <path class="merge-line" d="M 1040 320 Q 1080 320 1090 80" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 3"/>
+
+        <circle class="commit-dot merge" cx="1040" cy="320" r="8" fill="var(--staging)" stroke="var(--staging)"/>
+        <circle class="commit-dot merge" cx="1090" cy="80" r="8" fill="var(--develop)" stroke="var(--develop)"/>
+
+        <polygon points="1035,330 1045,320 1035,310" fill="var(--accent)"/>
+        <polygon points="1085,90 1095,80 1085,70" fill="var(--accent)"/>
+
+        <text class="merge-tag" x="1065" y="200" text-anchor="middle" fill="var(--accent)" font-weight="600" font-size="11">REVERSA</text>
+
+        <!-- ============ Phase 5: HOTFIX ============ -->
+        <path class="branch-line" d="M 1090 440 Q 1130 440 1160 500 L 1240 500 Q 1280 500 1310 440"
+              stroke="var(--hotfix)" />
+
+        <circle class="commit-dot" cx="1090" cy="440" r="6" fill="var(--bg-deep)" stroke="var(--production)"/>
+        <circle class="commit-dot" cx="1180" cy="500" r="5" fill="var(--bg-deep)" stroke="var(--hotfix)"/>
+        <circle class="commit-dot merge" cx="1310" cy="440" r="9" fill="var(--hotfix)" stroke="var(--hotfix)"/>
+
+        <text class="branch-label" x="1180" y="525" fill="var(--hotfix)" font-size="10">hotfix/9.22.1</text>
+        <rect x="1260" y="455" width="100" height="18" rx="9" fill="var(--hotfix)"/>
+        <text class="version-tag" x="1310" y="468" text-anchor="middle" fill="var(--bg-deep)" font-size="10">v9.22.1</text>
+
+        <!-- Hotfix reverse -->
+        <path class="merge-line" d="M 1310 440 Q 1340 440 1340 320" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7"/>
+        <path class="merge-line" d="M 1340 320 Q 1360 320 1360 80" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7"/>
+
+        <!-- Branch labels -->
+        <text class="branch-label" x="10" y="84" text-anchor="start" fill="var(--develop)">develop</text>
+        <text class="branch-label" x="10" y="204" text-anchor="start" fill="var(--release)" font-size="11">release-stg</text>
+        <text class="branch-label" x="10" y="324" text-anchor="start" fill="var(--staging)">staging</text>
+        <text class="branch-label" x="10" y="444" text-anchor="start" fill="var(--production)">production</text>
+      </svg>
+    </div>
+
+    <div class="two-col">
+      <div class="callout info">
+        <div class="callout-icon">→</div>
+        <div class="callout-content">
+          <span class="callout-title">Flujo hacia adelante</span>
+          feature → develop → release-stg → staging → release → production
+        </div>
+      </div>
+      <div class="callout success">
+        <div class="callout-icon">←</div>
+        <div class="callout-content">
+          <span class="callout-title">Flujo en reversa</span>
+          production → staging → develop (después de cada salida y cada hotfix)
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">★</div>
+      <div class="callout-content">
+        <span class="callout-title">Las 3 reglas que sostienen todo</span>
+        <strong>1.</strong> Todo merge a rama protegida usa <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">--no-ff</code> &nbsp;·&nbsp;
+        <strong>2.</strong> Convención de commits: DEV / STG / PROD / fix(scope) &nbsp;·&nbsp;
+        <strong>3.</strong> Después de cada salida a producción, merge en reversa
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    Esquema visual · Estrategia Git Flow del equipo · Esta es una referencia interactiva
+  </footer>
+</div>
+
+<script>
+  // ============ NAVIGATION ============
+  const buttons = document.querySelectorAll('.nav-btn');
+  const scenes = document.querySelectorAll('.scene');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.scene;
+
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      scenes.forEach(s => {
+        if (s.dataset.scene === target) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+
+      // Smooth scroll to top of scene area
+      window.scrollTo({ top: 280, behavior: 'smooth' });
+    });
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const current = document.querySelector('.nav-btn.active');
+      const all = Array.from(buttons);
+      const idx = all.indexOf(current);
+      let next;
+      if (e.key === 'ArrowRight') next = all[idx + 1] || all[0];
+      else next = all[idx - 1] || all[all.length - 1];
+      next.click();
+    }
+  });
+</script>
+</body>
+</html>
