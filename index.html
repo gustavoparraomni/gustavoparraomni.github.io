@@ -441,6 +441,100 @@
     font-weight: 600;
   }
 
+  /* ============ JIRA STATUS TABLE ============ */
+  .jira-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .jira-table th {
+    background: var(--bg-elevated);
+    text-align: left;
+    padding: 14px 18px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  .jira-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+  .jira-table tr:last-child td { border-bottom: none; }
+  .jira-table tr:hover td { background: rgba(255, 255, 255, 0.02); }
+  .jira-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  .jira-status.todo        { background: rgba(157, 167, 179, 0.10); color: var(--text-secondary); border: 1px solid rgba(157, 167, 179, 0.30); }
+  .jira-status.progress    { background: var(--feature-soft);       color: var(--feature);        border: 1px solid rgba(179, 146, 240, 0.35); }
+  .jira-status.deploy-int  { background: var(--develop-soft);       color: var(--develop);        border: 1px solid rgba(91, 141, 239, 0.35); }
+  .jira-status.deploy-stg  { background: var(--release-soft);       color: var(--release);        border: 1px solid rgba(246, 157, 80, 0.40); }
+  .jira-status.qa          { background: var(--staging-soft);       color: var(--staging);        border: 1px solid rgba(255, 182, 39, 0.45); }
+  .jira-table code.git-trigger {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--text-primary);
+    background: var(--bg-deep);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .jira-table .who { color: var(--text-muted); font-size: 12px; font-family: "JetBrains Mono", monospace; }
+  .jira-table .who.auto { color: var(--accent); font-weight: 600; }
+  .jira-table .row-num { color: var(--text-muted); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+
+  @media (max-width: 768px) {
+    .jira-table, .jira-table thead, .jira-table tbody, .jira-table tr, .jira-table th, .jira-table td { display: block; }
+    .jira-table thead { display: none; }
+    .jira-table tr {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 4px;
+    }
+    .jira-table tr:last-child { border-bottom: none; }
+    .jira-table td {
+      padding: 6px 18px;
+      border-bottom: none;
+    }
+    .jira-table td::before {
+      content: attr(data-label);
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+  }
+
+  .section-h3 {
+    font-family: "Fraunces", serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 48px 0 20px;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+
   /* ============ FOOTER ============ */
   .footer {
     margin-top: 80px;
@@ -480,6 +574,7 @@
     <button class="nav-btn" data-scene="5"><span class="num">05</span>Hotfix</button>
     <button class="nav-btn" data-scene="6"><span class="num">06</span>Cancelación</button>
     <button class="nav-btn" data-scene="7"><span class="num">07</span>Completo</button>
+    <button class="nav-btn" data-scene="8"><span class="num">08</span>Estados Jira</button>
   </nav>
 
   <!-- ============ LEGEND ============ -->
@@ -1202,6 +1297,95 @@
         <strong>1.</strong> Todo merge a rama protegida usa <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">--no-ff</code> &nbsp;·&nbsp;
         <strong>2.</strong> Convención de commits: DEV / STG / PROD / fix(scope) &nbsp;·&nbsp;
         <strong>3.</strong> Después de cada salida a producción, merge en reversa
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SCENE 8 — JIRA STATUS MAPPING
+       ============================================================ -->
+  <section class="scene" data-scene="8">
+    <div class="scene-header">
+      <div class="scene-tag">CASO 08 · ESTADOS DE JIRA</div>
+      <h2 class="scene-title">Cómo se mueven las <em>cards</em> al ritmo de las ramas</h2>
+      <p class="scene-desc">
+        El recorrido de un ticket desde que se planea hasta que QA está probándolo. Cinco estados, mapeados al evento de git que los dispara. La regla mental: si el código avanzó de ambiente, la card también.
+      </p>
+    </div>
+
+    <div class="diagram-card" style="overflow-x: auto;">
+      <table class="jira-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;">#</th>
+            <th style="width: 200px;">Estado Jira</th>
+            <th>Trigger en git</th>
+            <th style="width: 240px;">Quién mueve</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="#" class="row-num">01</td>
+            <td data-label="Estado"><span class="jira-status todo">To Do</span></td>
+            <td data-label="Trigger en git">Ticket refinado y en el sprint, aún sin rama.</td>
+            <td data-label="Quién mueve" class="who">PM / Tech Lead · manual</td>
+          </tr>
+          <tr>
+            <td data-label="#" class="row-num">02</td>
+            <td data-label="Estado"><span class="jira-status progress">In Progress</span></td>
+            <td data-label="Trigger en git"><code class="git-trigger">git checkout -b feature/AhorroMarket</code></td>
+            <td data-label="Quién mueve" class="who">Dev · manual al empezar</td>
+          </tr>
+          <tr>
+            <td data-label="#" class="row-num">03</td>
+            <td data-label="Estado"><span class="jira-status deploy-int">Deploy Integration</span></td>
+            <td data-label="Trigger en git">Dev terminó: PR enviado a la rama correspondiente.</td>
+            <td data-label="Quién mueve" class="who">Dev al abrir el PR · manual</td>
+          </tr>
+          <tr>
+            <td data-label="#" class="row-num">04</td>
+            <td data-label="Estado"><span class="jira-status deploy-stg">Deploy Staging</span></td>
+            <td data-label="Trigger en git">PR aprobado y mergeado a la rama correspondiente.</td>
+            <td data-label="Quién mueve" class="who">Reviewer al mergear · manual</td>
+          </tr>
+          <tr>
+            <td data-label="#" class="row-num">05</td>
+            <td data-label="Estado"><span class="jira-status qa">QA Staging</span></td>
+            <td data-label="Trigger en git">El desarrollo salió en una versión que QA ya está probando.</td>
+            <td data-label="Quién mueve" class="who auto">Script de versionado · automático</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout success">
+      <div class="callout-icon">⚙</div>
+      <div class="callout-content">
+        <span class="callout-title">Una transición es automática: <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">QA Staging</code></span>
+        Cuando se genera una versión, un script revisa los tickets incluidos en la build y los pasa a <code style="font-family: 'JetBrains Mono', monospace; color: var(--staging);">QA Staging</code> en bloque. Las demás transiciones las hace la persona responsable a mano.
+      </div>
+    </div>
+
+    <h3 class="section-h3">Casos especiales</h3>
+
+    <div class="steps-panel">
+      <div class="step-card">
+        <span class="step-num" style="background: var(--hotfix-soft); color: var(--hotfix); border-color: rgba(255, 107, 107, 0.4);">↺</span>
+        <div class="step-title">QA encontró un bug</div>
+        <div class="step-desc">La card vuelve a <strong>In Progress</strong>. Cuando el fix se mergea de vuelta a la rama de release, el script la regresa a <strong>QA Staging</strong> en la siguiente build.</div>
+      </div>
+      <div class="step-card">
+        <span class="step-num" style="background: var(--hotfix-soft); color: var(--hotfix); border-color: rgba(255, 107, 107, 0.4);">✕</span>
+        <div class="step-title">Feature cancelado</div>
+        <div class="step-desc">La card se mueve a <strong>Won't Do</strong>. Si ya estaba mergeado, se sigue el flujo de cancelación con <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">backup/*</code> + <code style="font-family: 'JetBrains Mono', monospace; color: var(--accent);">git revert</code> (ver Caso 06).</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">★</div>
+      <div class="callout-content">
+        <span class="callout-title">Por qué importa mantener Jira sincronizado</span>
+        Los reportes (sprint progress, release notes, métricas de ciclo) se construyen sobre los estados de Jira. Si las cards se quedan atrás del código, los dashboards mienten y nadie sabe qué está realmente listo para QA o ya en tiendas.
       </div>
     </div>
   </section>
